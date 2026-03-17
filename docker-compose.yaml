@@ -30,7 +30,7 @@ services:
   # Local URL: http://localhost:5055
   # http://btv.napoleon-fujita.ts.net:5055/
   jellyseerr:
-    image: fallenbagel/jellyseerr:latest
+    image: seerr/seerr:latest
     container_name: jellyseerr
     ports:
       - "5055:5055"

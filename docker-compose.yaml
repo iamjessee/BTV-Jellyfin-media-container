@@ -1,6 +1,6 @@
 services:
 
-  # Tailscale sidecar; no local app URL.
+  # Tailscale sidecar - no local app URL.
   tailscale:
     image: tailscale/tailscale:latest
     container_name: tailscale
@@ -106,7 +106,7 @@ services:
       - D:/downloads:/downloads
     restart: unless-stopped
 
-  # Helper service; no local app URL.
+  # Helper service - no local app URL.
   qbittorrent-port-sync:
     image: python:3.12-alpine
     container_name: qbittorrent-port-sync

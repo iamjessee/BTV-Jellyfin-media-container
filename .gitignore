@@ -1,0 +1,12 @@
+# secrets
+.env
+.env.*
+
+# runtime state
+tailscale/
+config/
+gluetun/
+*-config/
+
+# local logs
+logs/

@@ -1,0 +1,141 @@
+services:
+
+  # Tailscale sidecar; no local app URL.
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_HOSTNAME=btv
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+    volumes:
+      - ./tailscale:/var/lib/tailscale
+    command: tailscaled --tun=userspace-networking
+    restart: unless-stopped
+
+  # Local URL: http://localhost:8096
+  # http://btv.napoleon-fujita.ts.net:8096/
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    volumes:
+      - D:/:/media
+      - ./config:/config
+      - C:/Users/Jesse/Documents/Code/Jellyfin-Media-Container/btv-logo.PNG:/jellyfin/jellyfin-web/btv-logo.png
+    ports:
+      - "8096:8096"
+    restart: unless-stopped
+
+  # Local URL: http://localhost:5055
+  # http://btv.napoleon-fujita.ts.net:5055/
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./jellyseerr-config:/app/config
+    environment:
+      - TZ=America/Denver
+    restart: unless-stopped
+
+  # Local URL: http://localhost:8989
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - TZ=America/Denver
+    volumes:
+      - ./sonarr-config:/config
+      - D:/:/media
+      - D:/downloads:/downloads
+    ports:
+      - "8989:8989"
+    restart: unless-stopped
+
+  # Local URL: http://localhost:7878
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - TZ=America/Denver
+    volumes:
+      - ./radarr-config:/config
+      - D:/:/media
+      - D:/downloads:/downloads
+    ports:
+      - "7878:7878"
+    restart: unless-stopped
+
+  # Local URL: http://localhost:8080
+  gluetun:
+      image: qmcgaw/gluetun
+      container_name: gluetun
+      cap_add:
+        - NET_ADMIN
+      devices:
+        - /dev/net/tun:/dev/net/tun
+      environment:
+        - VPN_SERVICE_PROVIDER=protonvpn
+        - VPN_TYPE=wireguard
+        - WIREGUARD_PRIVATE_KEY=${PROTON_PRIVATE_KEY}
+        - SERVER_COUNTRIES=United States
+        - VPN_PORT_FORWARDING=on
+        - PORT_FORWARD_ONLY=on
+        - TZ=America/Denver
+      volumes:
+      - ./gluetun:/gluetun
+      - gluetun-shared:/tmp/gluetun
+      ports:
+        - "8080:8080"
+      restart: unless-stopped
+
+  # Local URL: http://localhost:8080 via gluetun
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    depends_on:
+    - gluetun
+    environment:
+      - TZ=America/Denver
+      - WEBUI_PORT=8080
+    volumes:
+      - ./qbittorrent-config:/config
+      - D:/downloads:/downloads
+    restart: unless-stopped
+
+  # Helper service; no local app URL.
+  qbittorrent-port-sync:
+    image: python:3.12-alpine
+    container_name: qbittorrent-port-sync
+    depends_on:
+      - gluetun
+      - qbittorrent
+    environment:
+      - QBT_URL=http://gluetun:8080
+      - QBT_USERNAME=${QBT_USERNAME:-admin}
+      - QBT_PASSWORD=${QBT_PASSWORD}
+      - QBT_PORT_SYNC_INTERVAL=30
+      - GLUETUN_FORWARDED_PORT_FILE=/tmp/gluetun/forwarded_port
+    volumes:
+      - gluetun-shared:/tmp/gluetun:ro
+      - ./scripts/qbt-port-sync.py:/app/qbt-port-sync.py:ro
+    command: ["python", "/app/qbt-port-sync.py"]
+    restart: unless-stopped
+
+  # Local URL: http://localhost:9696
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment:
+      - TZ=America/Denver
+    volumes:
+      - ./prowlarr-config:/config
+    ports:
+      - "9696:9696"
+    restart: unless-stopped
+
+volumes:
+  gluetun-shared:

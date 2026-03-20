@@ -20,8 +20,12 @@ services:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
     volumes:
-      - D:/:/media
+      - D:/Movies:/media/Movies:ro
+      - D:/TV:/media/TV:ro
+      - D:/Anime:/media/Anime:ro
+      - D:/media:/media/media:ro
       - ./config:/config
+      - ./cache:/cache
       - C:/Users/Jesse/Documents/Code/Jellyfin-Media-Container/btv-logo.PNG:/jellyfin/jellyfin-web/btv-logo.png
     ports:
       - "8096:8096"

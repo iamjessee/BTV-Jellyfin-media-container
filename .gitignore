@@ -11,3 +11,4 @@ jellyseerr-config-backup/
 
 # local logs
 logs/
+cache/

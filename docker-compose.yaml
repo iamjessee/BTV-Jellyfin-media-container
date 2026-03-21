@@ -15,7 +15,6 @@ services:
     restart: unless-stopped
 
   # Local URL: http://localhost:8096
-  # http://btv.napoleon-fujita.ts.net:8096/
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
@@ -32,7 +31,6 @@ services:
     restart: unless-stopped
 
   # Local URL: http://localhost:5055
-  # http://btv.napoleon-fujita.ts.net:5055/
   jellyseerr:
     image: seerr/seerr:latest
     container_name: jellyseerr

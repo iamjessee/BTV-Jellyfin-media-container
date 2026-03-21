@@ -20,10 +20,11 @@ services:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
     volumes:
-      - D:/Movies:/media/Movies:ro
-      - D:/TV:/media/TV:ro
-      - D:/Anime:/media/Anime:ro
-      - D:/media:/media/media:ro
+      # Jellyfin needs write access to media mounts for web UI deletes to work.
+      - D:/Movies:/media/Movies
+      - D:/TV:/media/TV
+      - D:/Anime:/media/Anime
+      - D:/media:/media/media
       - ./config:/config
       - ./cache:/cache
       - C:/Users/Jesse/Documents/Code/Jellyfin-Media-Container/btv-logo.PNG:/jellyfin/jellyfin-web/btv-logo.png
